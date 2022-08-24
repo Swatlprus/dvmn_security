@@ -3,7 +3,7 @@ from django.db import models
 from django.utils.timezone import localtime
 
 
-def is_visit_long(visit, passcard, minutes=60):
+def duration_visits(visit, passcard, minutes=60):
     this_passcard_visits = []
     visits = Visit.objects.filter(passcard=passcard)
 
@@ -13,28 +13,28 @@ def is_visit_long(visit, passcard, minutes=60):
             leaved_at = localtime(visit.leaved_at)
         else:
             leaved_at = localtime()
-        delta = (leaved_at - entered_at).total_seconds()
+        delta = get_duration(leaved_at, entered_at)
         delta_minutes = delta // 60
         duration = format_duration(delta)
-        flag = delta_minutes >= minutes
+        is_flag = delta_minutes >= minutes
         visit_stange = {
             'entered_at': f'{entered_at}',
             'duration': f'{duration}',
-            'is_strange': flag
+            'is_strange': is_flag
             }
         this_passcard_visits.append(visit_stange)
     return this_passcard_visits
 
 
-def get_duration(visit):
+def visits_not_leaved(visit):
     now_time = localtime()
     visits = Visit.objects.filter(leaved_at__isnull=True)
     non_closed_visits = []
     for visit in visits:
         who_entered = visit.passcard
         entered_at = localtime(visit.entered_at)
-        delta = now_time - entered_at
-        duration = format_duration(delta.total_seconds())
+        delta = get_duration(now_time, entered_at)
+        duration = format_duration(delta)
         dict_visit = {
             'who_entered': f'{who_entered}',
             'entered_at': f'{entered_at}',
@@ -42,6 +42,10 @@ def get_duration(visit):
         }
         non_closed_visits.append(dict_visit)
     return non_closed_visits
+
+
+def get_duration(now_at, entered_at):
+    return (now_at - entered_at).total_seconds()
 
 
 def format_duration(duration):
