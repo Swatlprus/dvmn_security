@@ -3,12 +3,13 @@ from django.db import models
 from django.utils.timezone import localtime
 
 
-def get_duration_visits(visit, passcard, minutes=60):
+def get_visits_by_passcard(request, passcard, minutes=60):
     this_passcard_visits = []
     visits = Visit.objects.filter(passcard=passcard)
 
     for visit in visits:
         delta = get_duration(visit)
+        entered_at = localtime(visit.entered_at)
         delta_minutes = delta // 60
         duration = format_duration(delta)
         is_strange = delta_minutes >= minutes
@@ -21,10 +22,11 @@ def get_duration_visits(visit, passcard, minutes=60):
     return this_passcard_visits
 
 
-def get_visits_not_exit(visit):
+def get_non_closed_visits(request):
     visits = Visit.objects.filter(leaved_at__isnull=True)
     non_closed_visits = []
     for visit in visits:
+        entered_at = localtime(visit.entered_at)
         delta = get_duration(visit)
         duration = format_duration(delta)
         dict_visit = {
@@ -36,7 +38,7 @@ def get_visits_not_exit(visit):
     return non_closed_visits
 
 
-def get_duration(visit: Visit) -> int:
+def get_duration(visit) -> int:
     entered_at = localtime(visit.entered_at)
     if visit.leaved_at:
         leaved_at = localtime(visit.leaved_at)
