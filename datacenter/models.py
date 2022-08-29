@@ -1,18 +1,18 @@
 from time import time
 from django.db import models
 from django.utils.timezone import localtime
+MAX_MINUTES_DURATION = 60
 
 
-def get_visits_by_passcard(request, passcard, minutes=60):
+def get_visits_by_passcard(passcard, max_minutes_duraition: int = MAX_MINUTES_DURATION):
     this_passcard_visits = []
     visits = Visit.objects.filter(passcard=passcard)
 
     for visit in visits:
         delta = get_duration(visit)
         entered_at = localtime(visit.entered_at)
-        delta_minutes = delta // 60
+        is_strange = is_visit_long(delta, max_minutes_duraition)
         duration = format_duration(delta)
-        is_strange = delta_minutes >= minutes
         visit_stange = {
             'entered_at': f'{entered_at}',
             'duration': f'{duration}',
@@ -22,7 +22,7 @@ def get_visits_by_passcard(request, passcard, minutes=60):
     return this_passcard_visits
 
 
-def get_non_closed_visits(request):
+def get_non_closed_visits():
     visits = Visit.objects.filter(leaved_at__isnull=True)
     non_closed_visits = []
     for visit in visits:
@@ -54,6 +54,12 @@ def format_duration(duration):
     timedelta_format = f'{int(days)} дней {int(hours)} часов \
         {int(minutes)} минут'
     return timedelta_format
+
+def is_visit_long(delta, max_minutes_duraition):
+    delta_minutes = delta // 60
+    is_strange = delta_minutes >= max_minutes_duraition
+    return is_strange
+
 
 
 class Passcard(models.Model):
