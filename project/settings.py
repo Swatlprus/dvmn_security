@@ -1,30 +1,22 @@
 import os
+import dj_database_url
 from environs import Env
 
 env = Env()
 env.read_env()
 
 
-DATABASES = {
-    'default': {
-        'ENGINE': 'django.db.backends.postgresql_psycopg2',
-        'HOST': env("HOST"),
-        'PORT': env("PORT"),
-        'NAME': env("NAME"),
-        'USER': env("USER_DB"),
-        'PASSWORD': env("PASSWORD"),
-    }
-}
+DATABASES = {'default': dj_database_url.config(env("DATABASES_URL"))}
 
 INSTALLED_APPS = ['datacenter']
 
-SECRET_KEY = os.getenv("SECRET_KEY")
+SECRET_KEY = env("SECRET_KEY")
 
-DEBUG = env('DEBUG')
+DEBUG = env.bool('DEBUG', False)
 
 ROOT_URLCONF = 'project.urls'
 
-ALLOWED_HOSTS = ['*']
+ALLOWED_HOSTS = env.list('ALLOWED_HOSTS', ['localhost'])
 
 
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
