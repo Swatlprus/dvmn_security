@@ -5,8 +5,7 @@ from environs import Env
 env = Env()
 env.read_env()
 
-
-DATABASES = {'default': dj_database_url.config(env("DATABASES_URL"))}
+DATABASES = {'default': dj_database_url.config(default=env("DATABASES_URL"))}
 
 INSTALLED_APPS = ['datacenter']
 
@@ -16,8 +15,7 @@ DEBUG = env.bool('DEBUG', False)
 
 ROOT_URLCONF = 'project.urls'
 
-ALLOWED_HOSTS = env.list('ALLOWED_HOSTS', ['localhost'])
-
+ALLOWED_HOSTS = env.list('ALLOWED_HOSTS', ['localhost', '127.0.0.1'])
 
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 TEMPLATES = [
